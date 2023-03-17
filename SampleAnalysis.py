@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-
+import math
 
 # Función para estructurar los datos recibidos de txt a un dataframe
 def structure_data(file):
@@ -26,16 +26,15 @@ def structure_data(file):
 # Función para analizar eléctricamente una determinada muestra, ajustando los datos al modelo
 def sample_analysis(df):
 
+    # Instanciar las variables de corte
     x_inicial = 0
     x_prerruptura = 10
     x_ruptura = 20
-    x_final = 70
+    x_final = len(df)
 
-    df = df.iloc[x_inicial:x_final]
-    #df_lineal = df.iloc[x_inicial:x_prerruptura]
-    #df_transicion = df.iloc[x_prerruptura:x_ruptura]
-    #df_exponencial = df.iloc[x_ruptura:x_final]
-
+    # Variables de ajuste
+    min_r2_exponential = 0.99
+    min_r2_lineal = 0.80
 
     # Ajuste de curva lineal : Evaluación para determinar el inicio del punto de ruptura
     # El ajuste se explora fijando un punto en la izquierda y recorriendo a la derecha
@@ -55,19 +54,16 @@ def sample_analysis(df):
         lineal_coefficient = lineal_reg.coef_[0]
         lineal_intercept = lineal_reg.intercept_
 
-        if float(score) >= 0.80:
+        if float(score) >= min_r2_lineal:
             x_prerruptura = x_final - i
             break
-
-    print("CAMPO ELÉCTRICO LINEAL: ", x_prerruptura)
-
 
     # Ajuste de curva exponencial : En este caso, el ajuste de curva se realiza en el sentido contrario,
     # Fijando el punto al final de la gráfica y recortando los datos de la izquierda hasta llegar a una
     # evaluación adecuada (0.90). Es necesario establecer que no se considera el efecto joule
 
     err_exponecial = 100
-    for i in range(x_prerruptura + 1, len(df) - 1):
+    for i in range(x_prerruptura + 1, len(df)):
 
         # Calcular el valor de alfa
         alfa = ((np.log10(df["J"][i + 1]) - np.log10(df["J"][i])) / (np.log10(df["E"][i + 1]) - np.log10(df["E"][i])))
@@ -81,18 +77,29 @@ def sample_analysis(df):
 
         score = r2_score(y_exponential, y_exponential_fit)
 
-        if score > 0.98:
+        if score > min_r2_exponential:
             x_ruptura = i
             break
 
-    # Definición de la zona de transición
+    # Impresión de las zonas
+    print("ZONA ÓHMICA: ", str(x_inicial), ": ", str(x_prerruptura))
+    print("ZONA DE TRANSICIÓN: ", str(x_prerruptura + 1), ": ", str(x_ruptura))
+    print("ZONA NO-ÓHMICA: ", str(x_ruptura + 1), ": ", str(x_final))
+    print("- - - - - - - - - - - - - - - - - - -")
 
+    # Definición de las ecuaciones de ajuste
+    exponent_physcical_sense = math.log(np.exp(fit[0]), lineal_reg.coef_[0])   # sentido físico de la exponencial
+    print(exponent_physcical_sense)
+    print(np.exp(fit[0]))
+    print(np.exp(fit[1]))
+    print(lineal_reg.coef_[0])
 
     # Graficar los ajustes del modelo
     plt.scatter(df["E"], df["J"], c="r")
-    plt.plot(x_exponential, y_exponential_fit, c="b")
-    plt.plot(x_lineal, y_lineal_fit, c="b")
+    plt.plot(x_exponential, y_exponential_fit, c="b", label="Exponential Fit:" )
+    plt.plot(x_lineal, y_lineal_fit, c="b", label="Lineal Fit")
     plt.grid()
+    plt.legend()
     plt.title("CAMPO ELÉCTRICO CONTRA DENSIDAD DE CORRIENTE")
     plt.xlabel("CAMPO ELÉCTRICO (V/cm)")
     plt.ylabel("DENSIDAD DE CORRIENTE (A/cm^2)")
@@ -122,5 +129,4 @@ file = 'Pruebas_electricas_1.txt'
 df = structure_data(file)
 #graph_data(df)
 sample_analysis(df)
-
 
