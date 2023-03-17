@@ -2,6 +2,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score
 
 
 # Función para estructurar los datos recibidos de txt a un dataframe
@@ -64,41 +65,50 @@ def sample_analysis(df):
     # Fijando el punto al final de la gráfica y recortando los datos de la izquierda hasta llegar a una
     # evaluación adecuada (0.90). Es necesario establecer que no se considera el efecto joule
 
-    # err_exponecial = 100
-    #for i in range(len(df) - x_prerruptura):
 
+
+
+    err_exponecial = 100
+    for i in range(x_prerruptura + 1, len(df) - 1):
+
+        # Calcular el valor de alfa
+        alfa = ((np.log10(df["J"][i + 1]) - np.log10(df["J"][i])) / (np.log10(df["E"][i + 1]) - np.log10(df["E"][i])))
+        x = df[i:x_final]["E"]
+        y = df[i:x_final]["J"]
+
+        log_y = np.log(y)
+
+        fit = np.polyfit(x, log_y, 1)
+        y_fit = np.exp(fit[1]) * np.exp(fit[0]*x)
+
+        x_empirical = x
+        y_empirical = (x / 96)**12
+
+        score = r2_score(y, y_fit)
+
+        print(score)
+        if score > 0.95:
+            x_ruptura = i
+            break
+
+    #plt.plot(x_empirical, y_empirical)
+    #plt.plot(x, y_fit)
+    #plt.scatter(x, y, c="r")
+    #plt.grid()
+    #plt.title("CAMPO ELÉCTRICO CONTRA DENSIDAD DE CORRIENTE")
+    #plt.xlabel("CAMPO ELÉCTRICO (V/cm)")
+    #plt.ylabel("DENSIDAD DE CORRIENTE (A/cm^2)")
+    #plt.show()
 
 
     # Definición de la zona de transición
 
 
 
-    #alfa = 0
-    #for i in range(x_inicial, x_final - 1):
-    #    alfa = ((np.log10(df["J"][i + 1]) - np.log10(df["J"][i])) / (np.log10(df["E"][i + 1]) - np.log10(df["E"][i])))
-    #    #print(alfa)
 
-    #x = df["E"]
-    #y = df["J"]
 
-    #log_y = np.log(y)
 
-    #fit = np.polyfit(x, log_y, 1)
-    #y_fit = np.exp(fit[1]) * np.exp(fit[0]*x)
 
-    #print(fit)
-
-    #x_empirical = df["E"]
-    #y_empirical = (df["E"] / 96)**12
-
-    #plt.plot(x_empirical, y_empirical)
-    #plt.plot(x, y_fit)
-    #plt.scatter(df["E"], df["J"], c="r")
-    #plt.grid()
-    #plt.title("CAMPO ELÉCTRICO CONTRA DENSIDAD DE CORRIENTE")
-    #plt.xlabel("CAMPO ELÉCTRICO (V/cm)")
-    #plt.ylabel("DENSIDAD DE CORRIENTE (A/cm^2)")
-    #plt.show()
 
 # Función para graficar la data que se recibe
 def graph_data(df):
