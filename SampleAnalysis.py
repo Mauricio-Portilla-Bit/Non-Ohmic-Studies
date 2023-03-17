@@ -50,11 +50,12 @@ def sample_analysis(df):
         lineal_reg = LinearRegression().fit(x_lineal, y_lineal)
 
         # Predecir la recta y evaluar el error recorriendo la curva a la derecha
-        x_lineal_fit = 0
         y_lineal_fit = lineal_reg.predict(x_lineal)
         score = "{0:.2f}".format(lineal_reg.score(x_lineal, y_lineal))
+        lineal_coefficient = lineal_reg.coef_[0]
+        lineal_intercept = lineal_reg.intercept_
 
-        if float(score) >= 0.90:
+        if float(score) >= 0.80:
             x_prerruptura = x_final - i
             break
 
@@ -65,43 +66,39 @@ def sample_analysis(df):
     # Fijando el punto al final de la gráfica y recortando los datos de la izquierda hasta llegar a una
     # evaluación adecuada (0.90). Es necesario establecer que no se considera el efecto joule
 
-
-
-
     err_exponecial = 100
     for i in range(x_prerruptura + 1, len(df) - 1):
 
         # Calcular el valor de alfa
         alfa = ((np.log10(df["J"][i + 1]) - np.log10(df["J"][i])) / (np.log10(df["E"][i + 1]) - np.log10(df["E"][i])))
-        x = df[i:x_final]["E"]
-        y = df[i:x_final]["J"]
+        x_exponential = df[i:x_final]["E"]
+        y_exponential = df[i:x_final]["J"]
 
-        log_y = np.log(y)
+        log_y = np.log(y_exponential)
 
-        fit = np.polyfit(x, log_y, 1)
-        y_fit = np.exp(fit[1]) * np.exp(fit[0]*x)
+        fit = np.polyfit(x_exponential, log_y, 1)
+        y_exponential_fit = np.exp(fit[1]) * np.exp(fit[0]*x_exponential)
 
-        x_empirical = x
-        y_empirical = (x / 96)**12
+        score = r2_score(y_exponential, y_exponential_fit)
 
-        score = r2_score(y, y_fit)
-
-        print(score)
-        if score > 0.95:
+        if score > 0.98:
             x_ruptura = i
             break
 
-    #plt.plot(x_empirical, y_empirical)
-    #plt.plot(x, y_fit)
-    #plt.scatter(x, y, c="r")
-    #plt.grid()
-    #plt.title("CAMPO ELÉCTRICO CONTRA DENSIDAD DE CORRIENTE")
-    #plt.xlabel("CAMPO ELÉCTRICO (V/cm)")
-    #plt.ylabel("DENSIDAD DE CORRIENTE (A/cm^2)")
-    #plt.show()
-
-
     # Definición de la zona de transición
+
+
+    # Graficar los ajustes del modelo
+    plt.scatter(df["E"], df["J"], c="r")
+    plt.plot(x_exponential, y_exponential_fit, c="b")
+    plt.plot(x_lineal, y_lineal_fit, c="b")
+    plt.grid()
+    plt.title("CAMPO ELÉCTRICO CONTRA DENSIDAD DE CORRIENTE")
+    plt.xlabel("CAMPO ELÉCTRICO (V/cm)")
+    plt.ylabel("DENSIDAD DE CORRIENTE (A/cm^2)")
+    plt.show()
+
+
 
 
 
