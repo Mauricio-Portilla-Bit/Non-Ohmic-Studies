@@ -66,7 +66,11 @@ def sample_analysis(df):
     for i in range(x_prerruptura + 1, len(df)):
 
         # Calcular el valor de alfa
-        alfa = ((np.log10(df["J"][i + 1]) - np.log10(df["J"][i])) / (np.log10(df["E"][i + 1]) - np.log10(df["E"][i])))
+        alfa_array = []
+        for j in range(i, len(df) - 1):
+            alfa = ((np.log10(df["J"][j + 1]) - np.log10(df["J"][j])) / (np.log10(df["E"][j + 1]) - np.log10(df["E"][j])))
+            alfa_array.append(alfa)
+
         x_exponential = df[i:x_final]["E"]
         y_exponential = df[i:x_final]["J"]
 
@@ -78,6 +82,8 @@ def sample_analysis(df):
         score = r2_score(y_exponential, y_exponential_fit)
 
         if score > min_r2_exponential:
+            print(np.mean(alfa_array))
+
             x_ruptura = i
             break
 
