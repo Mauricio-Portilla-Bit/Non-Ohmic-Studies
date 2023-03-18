@@ -82,27 +82,33 @@ def sample_analysis(df):
         score = r2_score(y_exponential, y_exponential_fit)
 
         if score > min_r2_exponential:
-            print(np.mean(alfa_array))
 
             x_ruptura = i
+
+            print("MEDIA DE ALFA:", np.mean(alfa_array))
+            print("DISTRIBUCIÓN ESTÁNDAR DE ALFA:", np.std(alfa_array))
+            print("MÍNIMO DE ALFA:", min(alfa_array))
+            print("MÁXIMO DE ALFA:", max(alfa_array))
+            print("- - - - - - - - - - - - - - - - - - -")
+
             break
 
     # Impresión de las zonas
+
     print("ZONA ÓHMICA: ", str(x_inicial), ": ", str(x_prerruptura))
     print("ZONA DE TRANSICIÓN: ", str(x_prerruptura + 1), ": ", str(x_ruptura))
     print("ZONA NO-ÓHMICA: ", str(x_ruptura + 1), ": ", str(x_final))
     print("- - - - - - - - - - - - - - - - - - -")
 
     # Definición de las ecuaciones de ajuste
-    exponent_physcical_sense = math.log(np.exp(fit[0]), lineal_reg.coef_[0])   # sentido físico de la exponencial
-    print(exponent_physcical_sense)
-    print(np.exp(fit[0]))
-    print(np.exp(fit[1]))
-    print(lineal_reg.coef_[0])
+    E_entre_J = np.power(y_exponential_fit, (1/np.mean(alfa)))   # sentido físico de la exponencial
+    print(E_entre_J)
+
+    physical_exponential_fit = np.array(E_entre_J)**np.mean(alfa)
 
     # Graficar los ajustes del modelo
     plt.scatter(df["E"], df["J"], c="r")
-    plt.plot(x_exponential, y_exponential_fit, c="b", label="Exponential Fit:" )
+    plt.plot(x_exponential, physical_exponential_fit, c="b", label="Exponential Fit2:" )
     plt.plot(x_lineal, y_lineal_fit, c="b", label="Lineal Fit")
     plt.grid()
     plt.legend()
