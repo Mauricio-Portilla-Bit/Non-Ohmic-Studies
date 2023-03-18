@@ -42,7 +42,6 @@ def sample_analysis(df):
 
     err_lineal = 100
     for i in range(len(df) - 1):
-
         # Generar el modelo lineal
         x_lineal = np.array(df[x_inicial: x_final - i]["E"]).reshape((-1, 1))
         y_lineal = np.array(df[x_inicial: x_final - i]["J"])
@@ -64,12 +63,14 @@ def sample_analysis(df):
 
     err_exponecial = 100
     for i in range(x_prerruptura + 1, len(df)):
-
         # Calcular el valor de alfa
         alfa_array = []
         for j in range(i, len(df) - 1):
-            alfa = ((np.log10(df["J"][j + 1]) - np.log10(df["J"][j])) / (np.log10(df["E"][j + 1]) - np.log10(df["E"][j])))
-            alfa_array.append(alfa)
+            try:
+                alfa = ((np.log10(df["J"][j + 1]) - np.log10(df["J"][j])) / (np.log10(df["E"][j + 1]) - np.log10(df["E"][j])))
+                alfa_array.append(alfa)
+            except:
+                print("Error in alfa calculation")
 
         x_exponential = df[i:x_final]["E"]
         y_exponential = df[i:x_final]["J"]
@@ -94,35 +95,35 @@ def sample_analysis(df):
             break
 
     # Impresión de las zonas
-
     print("ZONA ÓHMICA: ", str(x_inicial), ": ", str(x_prerruptura))
     print("ZONA DE TRANSICIÓN: ", str(x_prerruptura + 1), ": ", str(x_ruptura))
     print("ZONA NO-ÓHMICA: ", str(x_ruptura + 1), ": ", str(x_final))
     print("- - - - - - - - - - - - - - - - - - -")
 
-    # Definición de las ecuaciones de ajuste
-    E_entre_R = np.power(y_exponential_fit, (1/np.mean(alfa_array)))   # sentido físico de la exponencial
-    physical_exponential_fit = np.array(E_entre_R)**np.mean(alfa_array)
+
 
     # Graficar los ajustes del modelo
     plt.scatter(df["E"], df["J"], c="r")
-    plt.plot(x_exponential, physical_exponential_fit, c="b", label="Exponential Fit2:" + "(V/R)^" + str(np.mean(alfa_array)))
-    plt.plot(x_lineal, y_lineal_fit, c="b", label="Lineal Fit: " + str(lineal_coefficient) + "x")
+
+    # Definición de las ecuaciones de ajuste
+    try:
+        E_entre_R = np.power(y_exponential_fit, (1/np.mean(alfa_array)))   # sentido físico de la exponencial
+        physical_exponential_fit = np.array(E_entre_R)**np.mean(alfa_array)
+        plt.plot(x_exponential, physical_exponential_fit, c="b",
+        label="Exponential Fit2:" + "(V/R)^" + str(np.mean(alfa_array)))
+    except:
+        print("NO HAY COMPORTAMIENTO EXPONENCIAL")
+
+    try:
+        plt.plot(x_lineal, y_lineal_fit, c="b", label="Lineal Fit: " + str(lineal_coefficient) + "x")
+    except:
+        print("NO HAY COMPORTAMIENTO LINEAL")
     plt.grid()
     plt.legend()
     plt.title("CAMPO ELÉCTRICO CONTRA DENSIDAD DE CORRIENTE")
     plt.xlabel("CAMPO ELÉCTRICO (V/cm)")
     plt.ylabel("DENSIDAD DE CORRIENTE (A/cm^2)")
     plt.show()
-
-
-
-
-
-
-
-
-
 
 # Función para graficar la data que se recibe
 def graph_data(df):
@@ -134,9 +135,13 @@ def graph_data(df):
     plt.ylabel("DENSIDAD DE CORRIENTE (A/cm^2)")
     plt.show()
 
+file0 = 'Pruebas_electricas_1.txt'
+file1 = 'Prueba1Eq1.txt'
+file2 = 'Prueba2Eq1.txt'
+file3 = 'Prueba3Eq1.txt'
+file4 = 'Prueba4Eq1.txt'
 
-file = 'Pruebas_electricas_1.txt'
-df = structure_data(file)
+df = structure_data(file1)
 #graph_data(df)
 sample_analysis(df)
 
