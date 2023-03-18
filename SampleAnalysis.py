@@ -101,15 +101,13 @@ def sample_analysis(df):
     print("- - - - - - - - - - - - - - - - - - -")
 
     # Definición de las ecuaciones de ajuste
-    E_entre_J = np.power(y_exponential_fit, (1/np.mean(alfa)))   # sentido físico de la exponencial
-    print(E_entre_J)
-
-    physical_exponential_fit = np.array(E_entre_J)**np.mean(alfa)
+    E_entre_R = np.power(y_exponential_fit, (1/np.mean(alfa_array)))   # sentido físico de la exponencial
+    physical_exponential_fit = np.array(E_entre_R)**np.mean(alfa_array)
 
     # Graficar los ajustes del modelo
     plt.scatter(df["E"], df["J"], c="r")
-    plt.plot(x_exponential, physical_exponential_fit, c="b", label="Exponential Fit2:" )
-    plt.plot(x_lineal, y_lineal_fit, c="b", label="Lineal Fit")
+    plt.plot(x_exponential, physical_exponential_fit, c="b", label="Exponential Fit2:" + "(V/R)^" + str(np.mean(alfa_array)))
+    plt.plot(x_lineal, y_lineal_fit, c="b", label="Lineal Fit: " + str(lineal_coefficient) + "x")
     plt.grid()
     plt.legend()
     plt.title("CAMPO ELÉCTRICO CONTRA DENSIDAD DE CORRIENTE")
