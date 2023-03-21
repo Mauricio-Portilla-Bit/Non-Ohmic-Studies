@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import r2_score
-import math
 
 # Función para estructurar los datos recibidos de txt a un dataframe
 def structure_data(file):
@@ -54,6 +53,7 @@ def sample_analysis(df):
         lineal_intercept = lineal_reg.intercept_
 
         if float(score) >= min_r2_lineal:
+            print(score)
             x_prerruptura = x_final - i
             break
 
@@ -67,7 +67,7 @@ def sample_analysis(df):
         alfa_array = []
         for j in range(i, len(df) - 1):
             try:
-                alfa = ((np.log10(df["J"][j + 1]) - np.log10(df["J"][j])) / (np.log10(df["E"][j + 1]) - np.log10(df["E"][j])))
+                alfa = ((np.log(df["J"][j + 1]) - np.log(df["J"][j])) / (np.log(df["E"][j + 1]) - np.log(df["E"][j])))
                 alfa_array.append(alfa)
             except:
                 print("Error in alfa calculation")
@@ -83,8 +83,8 @@ def sample_analysis(df):
         score = r2_score(y_exponential, y_exponential_fit)
 
         if score > min_r2_exponential:
-
             x_ruptura = i
+            print("hola" + str(np.exp(fit[1]))+ " " + str(fit[0]))
 
             print("MEDIA DE ALFA:", np.mean(alfa_array))
             print("DISTRIBUCIÓN ESTÁNDAR DE ALFA:", np.std(alfa_array))
@@ -104,18 +104,19 @@ def sample_analysis(df):
 
     # Graficar los ajustes del modelo
     plt.scatter(df["E"], df["J"], c="r")
-
     # Definición de las ecuaciones de ajuste
     try:
         E_entre_R = np.power(y_exponential_fit, (1/np.mean(alfa_array)))   # sentido físico de la exponencial
         physical_exponential_fit = np.array(E_entre_R)**np.mean(alfa_array)
         plt.plot(x_exponential, physical_exponential_fit, c="b",
-        label="Exponential Fit2:" + "(V/R)^" + str(np.mean(alfa_array)))
+        label="Exponential Fit2:" + "(V/R)^" + str("{0:.2f}".format(np.mean(alfa_array))))
     except:
         print("NO HAY COMPORTAMIENTO EXPONENCIAL")
 
     try:
-        plt.plot(x_lineal, y_lineal_fit, c="b", label="Lineal Fit: " + str(lineal_coefficient) + "x")
+        plt.plot(x_lineal, y_lineal_fit, c="b", label="Lineal Fit: " + str("{0:.2f}".format(lineal_coefficient)) + "x"
+                                                 + " + " + str("{0:.2f}".format(lineal_intercept)))
+        print(lineal_intercept)
     except:
         print("NO HAY COMPORTAMIENTO LINEAL")
     plt.grid()
@@ -141,7 +142,6 @@ file2 = 'Prueba2Eq1.txt'
 file3 = 'Prueba3Eq1.txt'
 file4 = 'Prueba4Eq1.txt'
 
-df = structure_data(file1)
-#graph_data(df)
+df = structure_data(file0)
 sample_analysis(df)
 
